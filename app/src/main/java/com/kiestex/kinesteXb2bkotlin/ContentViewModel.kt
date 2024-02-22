@@ -14,7 +14,7 @@ import java.util.Date
 import java.util.Locale
 
 class ContentViewModel : ViewModel() {
-    val showWebView: MutableLiveData<Boolean> = MutableLiveData(false)
+    val showWebView: MutableLiveData<String> = MutableLiveData(State.LOADING.name)
     
     var apiKey: String = "YOUR API KEY"
     var companyName: String = "YOUR COMPANY NAME"
@@ -25,8 +25,6 @@ class ContentViewModel : ViewModel() {
     var message: MutableLiveData<String> = MutableLiveData("")
     var workoutData: MutableLiveData<String> = MutableLiveData("")
 
-
-
     fun handle(message: String) {
         val currentTime = getCurrentTime()
         try {
@@ -36,7 +34,7 @@ class ContentViewModel : ViewModel() {
                 "error_occured" -> workoutData.postValue("\nThere was an error: ${json.getString("data")} @$currentTime")
                 "exercise_completed" -> workoutData.postValue("\nExercise completed: ${json.getString("data")} @$currentTime")
                 "exitApp" -> {
-                    showWebView.postValue(false)
+                    showWebView.postValue(State.ERROR.name)
                     workoutData.postValue("\nUser closed workout window @$currentTime")
                 }
                 else -> { }

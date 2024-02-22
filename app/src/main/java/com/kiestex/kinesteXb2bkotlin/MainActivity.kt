@@ -3,6 +3,7 @@ package com.kiestex.kinesteXb2bkotlin
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -30,6 +31,12 @@ class MainActivity : AppCompatActivity() {
             viewModel.handle(message)
         }
 
+        viewModel.showWebView.observe(this) {
+            if (it.equals(State.ERROR)) {
+                finish()
+            }
+        }
+
         isLoading.observe(this) { loading ->
             if (loading) {
                 // WebView is loading
@@ -47,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = MyWebViewClient()
         webView.settings.javaScriptEnabled = true
 
-        webView.addJavascriptInterface(WebAppInterface(), "Android")
+        webView.addJavascriptInterface(WebAppInterface(), "listener")
 
         webView.loadUrl("https://kineste-x-w.vercel.app/")
     }
@@ -56,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             isLoading.postValue(false) // WebView finished loading
-
+            viewModel.showWebView.postValue(State.SUCCESS.name)
             // Add more parameters here like height, age, weight
             val script = """
          window.postMessage({
@@ -79,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     inner class WebAppInterface {
         @JavascriptInterface
         fun postMessage(message: String) {
+            Log.e("WebAppInterface", "postMessage: $message")
             viewModel.message.postValue(message)
         }
     }
