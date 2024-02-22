@@ -27,12 +27,8 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[ContentViewModel::class.java]
 
-        viewModel.message.observe(this) { message ->
-            viewModel.handle(message)
-        }
-
         viewModel.showWebView.observe(this) {
-            if (it.equals(State.ERROR)) {
+            if (it.equals(State.ERROR.name)) {
                 finish()
             }
         }
@@ -54,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = MyWebViewClient()
         webView.settings.javaScriptEnabled = true
 
-        webView.addJavascriptInterface(WebAppInterface(), "listener")
+        webView.addJavascriptInterface(WebAppInterface(), "messageHandler")
 
         webView.loadUrl("https://kineste-x-w.vercel.app/")
     }
@@ -78,6 +74,8 @@ class MainActivity : AppCompatActivity() {
             view?.evaluateJavascript(script) { result ->
                 if (result != null) {
                     // Handle result if needed
+                    Log.e("MyWebViewClient", "evaluateJavascript: $result")
+
                 }
             }
         }
@@ -87,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun postMessage(message: String) {
             Log.e("WebAppInterface", "postMessage: $message")
-            viewModel.message.postValue(message)
+            viewModel.handle(message)
         }
     }
 }

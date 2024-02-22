@@ -5,6 +5,7 @@ package com.kiestex.kinesteXb2bkotlin
  * Created by shagi on 22.02.2024 22:27
  */
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import org.json.JSONException
@@ -34,6 +35,8 @@ class ContentViewModel : ViewModel() {
                 "error_occured" -> workoutData.postValue("\nThere was an error: ${json.getString("data")} @$currentTime")
                 "exercise_completed" -> workoutData.postValue("\nExercise completed: ${json.getString("data")} @$currentTime")
                 "exitApp" -> {
+
+                    Log.e("TAG_viewmodel", "handle: " )
                     showWebView.postValue(State.ERROR.name)
                     workoutData.postValue("\nUser closed workout window @$currentTime")
                 }
