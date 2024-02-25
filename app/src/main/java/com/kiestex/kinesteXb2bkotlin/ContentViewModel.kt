@@ -16,13 +16,6 @@ import java.util.Locale
 
 class ContentViewModel : ViewModel() {
     val showWebView: MutableLiveData<String> = MutableLiveData(State.LOADING.name)
-    
-    var apiKey: String = "YOUR API KEY"
-    var companyName: String = "YOUR COMPANY NAME"
-    var userId: String = "YOUR USER ID"
-    var planC: String = "Cardio"
-    var category: String = "Fitness"
-
     var message: MutableLiveData<String> = MutableLiveData("")
     var workoutData: MutableLiveData<String> = MutableLiveData("")
 

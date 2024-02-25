@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "KinesteXB2BKotlin"
 include(":app")
- 
+include(":WebViewLib")
