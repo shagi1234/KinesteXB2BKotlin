@@ -48,13 +48,14 @@ class KinesteXWebView(
     }
 
     private fun injectJavaScript(view: WebView?) {
+
         val script = """
             window.postMessage({
-                'apiKey': '$apiKey',
+                'key': '$apiKey',
                 'company': '$companyName',
                 'userId': '$userId',
-                'planCategory': '$planCategory',
-                'workoutCategory': '$workoutCategory'
+                'planC': '$planCategory',
+                'category': '$workoutCategory'
             });
         """.trimIndent()
         view?.evaluateJavascript(script, null)

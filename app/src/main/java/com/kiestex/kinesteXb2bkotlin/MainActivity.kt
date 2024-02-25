@@ -43,8 +43,8 @@ class MainActivity : AppCompatActivity() {
             "13c5398cf7a98e3469f6fc8a9a5b2b9d5c8a4814",
             "KinesteX",
             "Shahruh",
+            "Cardio",
             "Fitness",
-            "",
             callback
         )
 
