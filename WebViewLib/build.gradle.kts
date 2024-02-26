@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.kiestex.webviewlib"
+    namespace = "com.kinestex.webviewlib"
     compileSdk = 33
 
     defaultConfig {

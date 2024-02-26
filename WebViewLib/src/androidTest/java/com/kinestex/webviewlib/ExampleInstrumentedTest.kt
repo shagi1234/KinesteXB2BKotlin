@@ -1,4 +1,4 @@
-package com.kiestex.kinesteXb2bkotlin
+package com.kinestex.webviewlib
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.kiestex.KinesteXb2bkotlin", appContext.packageName)
+        assertEquals("com.kinestex.webviewlib.test", appContext.packageName)
     }
 }

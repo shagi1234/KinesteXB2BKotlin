@@ -1,20 +1,23 @@
-package com.kiestex.kinesteXb2bkotlin
+package com.kinestex.KinesteXb2bkotlin
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
-import com.kiestex.KinesteXb2bkotlin.R
 import com.kinestex.webviewlib.KinesteXWebView
 import com.kinestex.webviewlib.repository.MessageCallback
+import com.kinestex.webviewlib.repository.PlanCategory
+import com.kinestex.webviewlib.repository.WorkoutCategory
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var isLoading: MutableLiveData<Boolean>
     private lateinit var viewModel: ContentViewModel
-    private lateinit var kinesteXWebView: KinesteXWebView // Add this
-    private lateinit var rootView:ConstraintLayout
+    private var kinesteXWebView: KinesteXWebView? = null // Add this
+    private lateinit var rootView: ConstraintLayout
 
     val callback = object : MessageCallback {
         override fun onMessageReceived(message: String) {
@@ -40,13 +43,17 @@ class MainActivity : AppCompatActivity() {
             this,
             "13c5398cf7a98e3469f6fc8a9a5b2b9d5c8a4814",
             "KinesteX",
-            "Shahruh",
-            "Cardio",
-            "Fitness",
+            "Shahruh<<",
+            PlanCategory.Cardio,
+            WorkoutCategory.Fitness,
             callback
         )
 
-        rootView.addView(kinesteXWebView.webView)
+        if (kinesteXWebView == null) {
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show()
+        } else {
+            rootView.addView(kinesteXWebView!!.webView)
+        }
 
 //        isLoading.observe(this) { loading ->
 //            if (loading) {
@@ -56,4 +63,6 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
     }
+
+
 }

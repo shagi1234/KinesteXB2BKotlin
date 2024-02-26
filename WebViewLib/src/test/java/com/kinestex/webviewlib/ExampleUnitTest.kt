@@ -1,4 +1,4 @@
-package com.kiestex.kinesteXb2bkotlin
+package com.kinestex.webviewlib
 
 import org.junit.Test
 
