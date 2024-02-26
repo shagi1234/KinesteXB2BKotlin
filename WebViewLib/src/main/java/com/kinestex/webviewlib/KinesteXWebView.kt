@@ -6,9 +6,8 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.kiestex.webviewlib.repository.MessageCallback
-import com.kiestex.webviewlib.repository.PlanCategory
-import com.kiestex.webviewlib.repository.WorkoutCategory
+import com.kinestex.webviewlib.repository.PlanCategory
+import com.kinestex.webviewlib.repository.WorkoutCategory
 import com.kinestex.webviewlib.repository.MessageCallback
 
 
