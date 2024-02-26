@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kiestex.KinesteXb2bkotlin"
+    namespace = "com.kinestex.KinesteXb2bkotlin"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.kiestex.KinesteXb2bkotlin"
+        applicationId = "com.kinestex.KinesteXb2bkotlin"
         minSdk = 28
         targetSdk = 34
         versionCode = 1

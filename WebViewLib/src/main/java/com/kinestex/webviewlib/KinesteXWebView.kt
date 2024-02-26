@@ -1,4 +1,4 @@
-package com.kiestex.webviewlib
+package com.kinestex.webviewlib
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,11 +9,8 @@ import android.webkit.WebViewClient
 import com.kiestex.webviewlib.repository.MessageCallback
 import com.kiestex.webviewlib.repository.PlanCategory
 import com.kiestex.webviewlib.repository.WorkoutCategory
+import com.kinestex.webviewlib.repository.MessageCallback
 
-
-/*
- * Created by shagi on 25.02.2024 01:56
- */
 
 class KinesteXWebView(
     context: Context,

@@ -6,9 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
-import com.kiestex.KinesteXb2bkotlin.R
-import com.kiestex.webviewlib.KinesteXWebView
-import com.kiestex.webviewlib.repository.MessageCallback
+import com.kinestex.KinesteXb2bkotlin.R
+import com.kinestex.webviewlib.KinesteXWebView
+import com.kinestex.webviewlib.repository.MessageCallback
 
 class MainActivity : AppCompatActivity() {
     private lateinit var isLoading: MutableLiveData<Boolean>
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         rootView = findViewById(R.id.root)
-        isLoading = MutableLiveData()
+ //       isLoading = MutableLiveData()
 
         viewModel = ViewModelProvider(this)[ContentViewModel::class.java]
 
@@ -49,12 +49,12 @@ class MainActivity : AppCompatActivity() {
 
         rootView.addView(kinesteXWebView.webView)
 
-        isLoading.observe(this) { loading ->
-            if (loading) {
-                // WebView is loading
-            } else {
-                // WebView finished loading
-            }
-        }
+//        isLoading.observe(this) { loading ->
+//            if (loading) {
+//                // WebView is loading
+//            } else {
+//                // WebView finished loading
+//            }
+//        }
     }
 }
