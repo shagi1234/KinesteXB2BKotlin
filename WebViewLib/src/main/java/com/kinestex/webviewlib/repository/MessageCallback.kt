@@ -1,4 +1,4 @@
-package com.kiestex.webviewlib.repository
+package com.kinestex.webviewlib.repository
 
 
 /*
