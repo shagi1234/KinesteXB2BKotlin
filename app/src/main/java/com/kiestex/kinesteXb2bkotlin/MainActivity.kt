@@ -37,7 +37,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Create KinesteXWebView instance and inject JavaScript interface
         kinesteXWebView = KinesteXWebView.createWebView(
             this,
             "13c5398cf7a98e3469f6fc8a9a5b2b9d5c8a4814",

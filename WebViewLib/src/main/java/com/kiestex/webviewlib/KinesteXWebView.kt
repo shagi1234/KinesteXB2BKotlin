@@ -7,6 +7,8 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.kiestex.webviewlib.repository.MessageCallback
+import com.kiestex.webviewlib.repository.PlanCategory
+import com.kiestex.webviewlib.repository.WorkoutCategory
 
 
 /*
@@ -15,15 +17,80 @@ import com.kiestex.webviewlib.repository.MessageCallback
 
 class KinesteXWebView(
     context: Context,
-    private val apiKey: String,
-    private val companyName: String,
-    private val userId: String,
-    private val planCategory: String,
-    private val workoutCategory: String,
+    private var apiKey: String,
+    private var companyName: String,
+    private var userId: String,
+    private var planCategory: String,
+    private var workoutCategory: String,
     private val messageCallback: MessageCallback
 ) {
     var webView: WebView = WebView(context).apply {
         setupWebView(this)
+
+         validateInput(
+             apiKey = apiKey,
+             companyName = companyName,
+             userId = userId,
+             planCategory = planCategory,
+             workoutCategory = workoutCategory,
+         )
+    }
+
+    private fun validateInput(apiKey: String,
+                              companyName: String,
+                              userId: String,
+                              planCategory: String,
+                              workoutCategory: String
+    ): String? {
+
+        if (containsDisallowedCharacters(apiKey) || containsDisallowedCharacters(companyName) || containsDisallowedCharacters(userId)) {
+            return "apiKey, companyName, or userId contains disallowed characters: < >, { }, ( ), [ ], ;, \", ', $, ., #, or <script>"
+        }
+
+
+        when (planCategory) {
+            PlanCategory.Cardio.name -> {
+                this.planCategory = "Cardio"
+            }
+            PlanCategory.WeightManagement.name -> {
+                this.planCategory = "Weight Management"
+            }
+            PlanCategory.Strength.name -> {
+                this.planCategory = "Strength"
+            }
+            PlanCategory.Rehabilitation.name -> {
+                this.planCategory = "Rehabilitation"
+            }
+            else -> {
+                if (planCategory.isEmpty()) {
+                    return "planCategory cannot be empty"
+                } else if (containsDisallowedCharacters(planCategory)) {
+                    return "planCategory contains disallowed characters: < >, { }, ( ), [ ], ;, \", ', $, ., #, or <script>"
+                }
+                this.planCategory = planCategory
+            }
+        }
+
+        when (workoutCategory) {
+            WorkoutCategory.Fitness.name -> this.workoutCategory = "Fitness"
+            WorkoutCategory.Rehabilitation.name -> this.workoutCategory = "Rehabilitation"
+
+            else -> {
+                if (workoutCategory.isEmpty()) {
+                    return "workoutCategory cannot be empty"
+                } else if (containsDisallowedCharacters(workoutCategory)) {
+                    return "workoutCategory contains disallowed characters: < >, { }, ( ), [ ], ;, \", ', $, ., #, or <script>"
+                }
+                this.workoutCategory = workoutCategory
+            }
+        }
+        return null
+    }
+
+
+    private fun containsDisallowedCharacters(input: String): Boolean {
+        val disallowedCharacters = setOf('<', '>', '{', '}', '(', ')', '[', ']', ';', '"', '\'', '$', '.', '#', '<', '>')
+        return input.any { it in disallowedCharacters }
     }
 
     @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -73,6 +140,7 @@ class KinesteXWebView(
             workoutCategory: String,
             callback: MessageCallback
         ): KinesteXWebView {
+
             return KinesteXWebView(context, apiKey, companyName, userId, planCategory, workoutCategory, callback)
         }
     }
