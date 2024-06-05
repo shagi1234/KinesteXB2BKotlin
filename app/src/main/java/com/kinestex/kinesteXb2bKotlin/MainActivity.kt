@@ -1,9 +1,11 @@
 package com.kinestex.kinesteXb2bKotlin
 
+import android.Manifest.permission.CAMERA
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -14,7 +16,10 @@ import android.webkit.WebView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.kinestex.kinesteXSDK.KinesteXSDK
@@ -24,6 +29,10 @@ import com.kinestex.kinesteXb2bKotlin.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
+    }
+
     private var tvMistake: TextView? = null
     private var tvReps: TextView? = null
 
@@ -45,11 +54,77 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         supportActionBar?.hide()
 
+        checkCameraPermission()
+
         viewModel = ViewModelProvider(this)[ContentViewModel::class.java]
 
         initUiListeners()
         observe()
     }
+
+    private fun checkCameraPermission() {
+        val permission = CAMERA
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission is not granted, show rationale if necessary
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                // You can show a custom rationale dialog here
+                AlertDialog.Builder(this)
+                    .setTitle("Camera Permission Needed")
+                    .setMessage("This app requires access to the camera to take photos.")
+                    .setPositiveButton("OK") { _, _ ->
+                        // Request permission again
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(permission),
+                            CAMERA_PERMISSION_REQUEST_CODE
+                        )
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .create()
+                    .show()
+            } else {
+                // No rationale needed, request the permission
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permission),
+                    CAMERA_PERMISSION_REQUEST_CODE
+                )
+            }
+        } else {
+            // Permission is already granted
+            onCameraPermissionGranted()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    onCameraPermissionGranted()
+                } else {
+                    Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+        }
+    }
+
+    private fun onCameraPermissionGranted() {
+//        Toast.makeText(this, "Camera permission granted", Toast.LENGTH_SHORT).show()
+    }
+
 
     private fun initUiListeners() {
         binding.apply {
@@ -73,6 +148,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleNextButton() {
         createWebView()?.let { view ->
             viewModel.showWebView.value = WebViewState.SUCCESS
+
             if (viewModel.selectedOptionPosition.value == 4) {
                 binding.layoutWebView.addView(view)
             }
@@ -115,11 +191,13 @@ class MainActivity : AppCompatActivity() {
 
         window.apply {
             // Make status bar transparent
-            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             statusBarColor = Color.TRANSPARENT
 
             // Make navigation bar transparent
-            decorView.systemUiVisibility = decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            decorView.systemUiVisibility =
+                decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             navigationBarColor = Color.TRANSPARENT
         }
 
@@ -221,6 +299,8 @@ class MainActivity : AppCompatActivity() {
 
                     WebViewState.SUCCESS -> {
                         binding.layoutWebView.visibility = View.VISIBLE
+
+                        if (viewModel.selectedOptionPosition.value == 4) return@collect
                         webView?.let { binding.layoutWebView.addView(setLayoutParamsFullScreen(it)) }
                     }
                 }
