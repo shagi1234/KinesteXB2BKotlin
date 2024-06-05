@@ -244,21 +244,28 @@
         </LinearLayout>
     </LinearLayout>
 
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/next"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="20dp"
-        android:backgroundTint="@color/lightGreen"
-        android:paddingVertical="10dp"
-        android:text="View Complete UX"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:cornerRadius="8dp"
-        app:rippleColor="@color/black_10" />
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/lightGreen"
+            android:paddingVertical="10dp"
+            android:text="View Complete UX"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:cornerRadius="8dp"
+            app:rippleColor="@color/black_10" />
+
+    </FrameLayout>
+
 
     <FrameLayout
         android:id="@+id/layout_web_view"

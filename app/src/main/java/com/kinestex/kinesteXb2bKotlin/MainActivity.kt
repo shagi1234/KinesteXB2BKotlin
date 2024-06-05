@@ -3,6 +3,7 @@ package com.kinestex.kinesteXb2bKotlin
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -22,22 +23,20 @@ import com.kinestex.kinesteXSDK.WebViewMessage
 import com.kinestex.kinesteXb2bKotlin.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 
-
 class MainActivity : AppCompatActivity() {
-    private lateinit var viewModel: ContentViewModel
-    private lateinit var binding: ActivityMainBinding
-    private var iconSubOptions: MutableList<ImageView> = mutableListOf()
-    private var webView: WebView? = null
-
     private var tvMistake: TextView? = null
     private var tvReps: TextView? = null
 
+    private lateinit var viewModel: ContentViewModel
+    private lateinit var binding: ActivityMainBinding
+    private val iconSubOptions = mutableListOf<ImageView>()
+    private var webView: WebView? = null
 
     private val apiKey = "678c2c690b1b2496c20fd42676794da5a77291f6" // store this key securely
     private val company = "CAREVOICE"
     private val userId = "user1"
 
-    @SuppressLint("SetJavaScriptEnabled", "MissingInflatedId")
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setFullScreen()
@@ -49,256 +48,164 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[ContentViewModel::class.java]
 
         initUiListeners()
-
         observe()
-
     }
 
     private fun initUiListeners() {
-        binding.toggleOptions.setOnClickListener {
-            handleDropDown(binding.iconDropdown, binding.collapsableContent)
-        }
+        binding.apply {
+            toggleOptions.setOnClickListener { handleDropDown(iconDropdown, collapsableContent) }
+            toggleOptionsCategory.setOnClickListener {
+                handleDropDown(
+                    iconDropdownCategory, collapsableContentCategory
+                )
+            }
 
-        binding.toggleOptionsCategory.setOnClickListener {
-            handleDropDown(binding.iconDropdownCategory, binding.collapsableContentCategory)
-        }
+            next.setOnClickListener { handleNextButton() }
 
-        binding.next.setOnClickListener {
-            handleNextButton()
+            completeUx.setOnClickListener { handleOptionSelection(0, iconRadioCompleteUx) }
+            workoutPlan.setOnClickListener { handleOptionSelection(1, iconRadioWorkoutPlan) }
+            workout.setOnClickListener { handleOptionSelection(2, iconRadioWorkout) }
+            challenge.setOnClickListener { handleOptionSelection(3, iconRadioChallenge) }
+            camera.setOnClickListener { handleOptionSelection(4, iconRadioCamera) }
         }
-
-        binding.completeUx.setOnClickListener {
-            unCheckOldPosition()
-            viewModel.setOption(0)
-            setChecked(binding.iconRadioCompleteUx)
-        }
-        binding.workoutPlan.setOnClickListener {
-            unCheckOldPosition()
-            viewModel.setOption(1)
-            setChecked(binding.iconRadioWorkoutPlan)
-        }
-        binding.workout.setOnClickListener {
-            unCheckOldPosition()
-            viewModel.setOption(2)
-            setChecked(binding.iconRadioWorkout)
-        }
-        binding.challenge.setOnClickListener {
-            unCheckOldPosition()
-            viewModel.setOption(3)
-            setChecked(binding.iconRadioChallenge)
-        }
-        binding.camera.setOnClickListener {
-            unCheckOldPosition()
-            viewModel.setOption(4)
-            setChecked(binding.iconRadioCamera)
-        }
-
-
     }
 
     private fun handleNextButton() {
-        val view = createWebView()
-
-        view?.let {
+        createWebView()?.let { view ->
             viewModel.showWebView.value = WebViewState.SUCCESS
-
             if (viewModel.selectedOptionPosition.value == 4) {
                 binding.layoutWebView.addView(view)
             }
         }
     }
 
-    private fun setChecked(iconRadioCompleteUx: ImageView) {
-        iconRadioCompleteUx.setImageResource(R.drawable.radio_active)
+    private fun handleOptionSelection(position: Int, icon: ImageView) {
+        uncheckOldPosition()
+        viewModel.setOption(position)
+        setChecked(icon)
     }
 
-    private fun unCheckOldPosition() {
-        when (viewModel.selectedOptionPosition.value) {
-            0 -> {
-                binding.iconRadioCompleteUx.setImageResource(R.drawable.radio_unchecked)
-            }
-
-            1 -> {
-                binding.iconRadioWorkoutPlan.setImageResource(R.drawable.radio_unchecked)
-            }
-
-            2 -> {
-                binding.iconRadioWorkout.setImageResource(R.drawable.radio_unchecked)
-            }
-
-            3 -> {
-                binding.iconRadioChallenge.setImageResource(R.drawable.radio_unchecked)
-            }
-
-            4 -> {
-                binding.iconRadioCamera.setImageResource(R.drawable.radio_unchecked)
-            }
-        }
+    private fun setChecked(icon: ImageView) {
+        icon.setImageResource(R.drawable.radio_active)
     }
 
-    private fun handleDropDown(
-        icon: View,
-        collapsableContent: LinearLayout
-    ) {
+    private fun uncheckOldPosition() {
+        val currentPosition = viewModel.selectedOptionPosition.value
+        val icons = listOf(
+            binding.iconRadioCompleteUx,
+            binding.iconRadioWorkoutPlan,
+            binding.iconRadioWorkout,
+            binding.iconRadioChallenge,
+            binding.iconRadioCamera
+        )
+        icons[currentPosition].setImageResource(R.drawable.radio_unchecked)
+    }
 
-        if (icon.rotation == 0f) {
-            icon.animate().rotation(180f).duration = 200
+    private fun handleDropDown(icon: View, collapsableContent: LinearLayout) {
+        val rotation = if (icon.rotation == 0f) 180f else 0f
+        icon.animate().rotation(rotation).duration = 200
+        if (rotation == 180f) {
             AnimationUtils.expand(collapsableContent, 200)
         } else {
-            icon.animate().rotation(0f).duration = 200
             AnimationUtils.collapse(collapsableContent, 200)
         }
     }
 
     private fun setFullScreen() {
+
+        window.apply {
+            // Make status bar transparent
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            statusBarColor = Color.TRANSPARENT
+
+            // Make navigation bar transparent
+            decorView.systemUiVisibility = decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            navigationBarColor = Color.TRANSPARENT
+        }
+
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
+            WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
     }
 
     private fun createWebView(): View? {
-        var view: View? = null
-
-        val subOption = viewModel.integrateOptions[viewModel.selectedOptionPosition.value].subOption?.get(viewModel.selectedSubOption)
-
-        when (viewModel.selectedOptionPosition.value) {
+        val subOption =
+            viewModel.integrateOptions[viewModel.selectedOptionPosition.value].subOption?.get(
+                viewModel.selectedSubOption
+            )
+        val view = when (viewModel.selectedOptionPosition.value) {
             0 -> {
                 webView = KinesteXSDK.createMainView(
                     this,
-                    apiKey = apiKey,
-                    companyName = company,
-                    userId = userId,
-                    planCategory = getPlanCategory(subOption),
-                    user = null,
-                    isLoading = viewModel.isLoading,
-                    onMessageReceived = { message ->
-                        when (message) {
-
-                            is WebViewMessage.ExitKinestex -> {
-                                lifecycleScope.launch {
-                                    viewModel.showWebView.emit(WebViewState.ERROR)
-                                }
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    }
+                    apiKey,
+                    company,
+                    userId,
+                    getPlanCategory(subOption),
+                    null,
+                    viewModel.isLoading,
+                    ::handleWebViewMessage
                 )
-
-                view = webView
-
+                return webView
             }
 
             1 -> {
                 webView = KinesteXSDK.createPlanView(
                     this,
-                    apiKey = apiKey,
-                    companyName = company,
-                    userId = userId,
-                    planName = subOption ?: "",
-                    user = null,
-                    isLoading = viewModel.isLoading,
-                    onMessageReceived = { message ->
-                        when (message) {
-
-                            is WebViewMessage.ExitKinestex -> {
-                                lifecycleScope.launch {
-                                    viewModel.showWebView.emit(WebViewState.ERROR)
-                                }
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    }
+                    apiKey,
+                    company,
+                    userId,
+                    subOption ?: "",
+                    null,
+                    viewModel.isLoading,
+                    ::handleWebViewMessage
                 )
-
-                view = webView
+                return webView
 
             }
 
             2 -> {
-
                 webView = KinesteXSDK.createWorkoutView(
                     this,
-                    apiKey = apiKey,
-                    companyName = company,
-                    userId = userId,
-                    workoutName = subOption ?: "",
-                    user = null,
-                    isLoading = viewModel.isLoading,
-                    onMessageReceived = { message ->
-                        when (message) {
-
-                            is WebViewMessage.ExitKinestex -> {
-                                lifecycleScope.launch {
-                                    viewModel.showWebView.emit(WebViewState.ERROR)
-                                }
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    }
+                    apiKey,
+                    company,
+                    userId,
+                    subOption ?: "",
+                    null,
+                    viewModel.isLoading,
+                    ::handleWebViewMessage
                 )
-
-                view = webView
-
+                return webView
             }
 
             3 -> {
-
                 webView = KinesteXSDK.createChallengeView(
                     this,
-                    apiKey = apiKey,
-                    companyName = company,
-                    userId = userId,
-                    exercise = subOption ?: "",
-                    user = null,
-                    countdown = 100,
-                    isLoading = viewModel.isLoading,
-                    onMessageReceived = { message ->
-                        when (message) {
-
-                            is WebViewMessage.ExitKinestex -> {
-                                lifecycleScope.launch {
-                                    viewModel.showWebView.emit(WebViewState.ERROR)
-                                }
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    }
+                    apiKey,
+                    company,
+                    userId,
+                    subOption ?: "",
+                    100,
+                    null,
+                    viewModel.isLoading,
+                    ::handleWebViewMessage
                 )
-                view = webView
-
+                return webView
             }
 
-            4 -> {
-                view = createCameraComponentView(this)
-            }
-
-
+            4 -> createCameraComponentView(this)
+            else -> null
         }
-
-        return view
+        return view?.let { setLayoutParamsFullScreen(it) }
     }
 
-    private fun getPlanCategory(s: String?): PlanCategory {
-        return when (s?.lowercase()) {
+    private fun getPlanCategory(subOption: String?): PlanCategory {
+        return when (subOption?.lowercase()) {
             "cardio" -> PlanCategory.Cardio
             "weightmanagement" -> PlanCategory.WeightManagement
             "strength" -> PlanCategory.Strength
             "rehabilitation" -> PlanCategory.Rehabilitation
-            else -> PlanCategory.Custom(s ?: "")
+            else -> PlanCategory.Custom(subOption ?: "")
         }
     }
 
@@ -306,136 +213,91 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.showWebView.collect { state ->
                 when (state) {
-                    WebViewState.LOADING -> {
-                        //
+                    WebViewState.LOADING -> { /* show loading */
                     }
 
-                    WebViewState.ERROR -> {
-                        binding.layoutWebView.removeAllViews()
-                        binding.layoutWebView.visibility = View.GONE
-                    }
+                    WebViewState.ERROR -> binding.layoutWebView.removeAllViews()
+                        .also { binding.layoutWebView.visibility = View.GONE }
 
                     WebViewState.SUCCESS -> {
                         binding.layoutWebView.visibility = View.VISIBLE
-
-                        webView?.let {
-                            if (viewModel.selectedOptionPosition.value == 4) return@collect
-
-                            val view = setLayoutParamsFullScreen(it)
-                            binding.layoutWebView.removeAllViews()
-                            binding.layoutWebView.addView(view)
-                        }
-
+                        webView?.let { binding.layoutWebView.addView(setLayoutParamsFullScreen(it)) }
                     }
                 }
             }
         }
 
-
         lifecycleScope.launch {
-            viewModel.selectedOptionPosition.collect {
-                binding.next.text = "View ${viewModel.integrateOptions[it].title}"
-                createSubOption(it)
+            viewModel.selectedOptionPosition.collect { position ->
+                binding.next.text = "View ${viewModel.integrateOptions[position].title}"
+                createSubOption(position)
             }
         }
 
         lifecycleScope.launch {
             viewModel.mistake.collect { mistake ->
                 tvMistake?.let {
-                    it.text = "MISTAKE: $mistake"
+                    updateTextView(
+                        it, "MISTAKE: $mistake"
+                    )
                 }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.reps.collect { reps ->
-                tvReps?.let {
-                    it.text = "REPS: $reps"
-                }
-            }
+            viewModel.reps.collect { reps -> tvReps?.let { updateTextView(it, "REPS: $reps") } }
         }
-
-
     }
 
     private fun createSubOption(optionPosition: Int) {
         val subOptions = viewModel.integrateOptions[optionPosition].subOption
 
-        if (subOptions.isNullOrEmpty()) {
-            binding.layoutCategory.visibility = View.GONE
-            return
-        }
+        binding.apply {
+            if (subOptions.isNullOrEmpty()) {
+                layoutCategory.visibility = View.GONE
+            } else {
+                layoutCategory.visibility = View.VISIBLE
+                collapsableContentCategory.removeAllViews()
+                iconSubOptions.clear()
+                viewModel.selectedSubOption = 0
 
-        binding.layoutCategory.visibility = View.VISIBLE
-        binding.collapsableContentCategory.removeAllViews()
-        binding.collapsableContentCategory.invalidate()
-        iconSubOptions.clear()
-        viewModel.selectedSubOption = 0
-
-
-        subOptions.forEachIndexed { index, title ->
-            val optionView = createOptionView(this, title, index)
-
-            optionView.setOnClickListener {
-                val oldPosition = viewModel.selectedSubOption
-
-                try {
-                    iconSubOptions[oldPosition].setImageResource(R.drawable.radio_unchecked)
-                    viewModel.selectedSubOption = index
-                    iconSubOptions[index].setImageResource(R.drawable.radio_active)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                subOptions.forEachIndexed { index, title ->
+                    createOptionView(this@MainActivity, title, index).also { optionView ->
+                        optionView.setOnClickListener { handleSubOptionSelection(index) }
+                        collapsableContentCategory.addView(optionView)
+                    }
                 }
 
+                collapsableContentCategory.layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                )
             }
-
-            binding.collapsableContentCategory.addView(optionView)
         }
-        val params = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        binding.collapsableContentCategory.layoutParams = params
-
     }
 
-    private fun createCameraComponentView(
-        context: Context
-    ): View {
+    private fun handleSubOptionSelection(index: Int) {
+        val oldPosition = viewModel.selectedSubOption
+        iconSubOptions[oldPosition].setImageResource(R.drawable.radio_unchecked)
+        viewModel.selectedSubOption = index
+        iconSubOptions[index].setImageResource(R.drawable.radio_active)
+    }
+
+    private fun createCameraComponentView(context: Context): View {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ).apply {
-                gravity = Gravity.CENTER_VERTICAL
-            }
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+            ).apply { gravity = Gravity.CENTER_VERTICAL }
             setPadding(16, 16, 16, 16)
         }
 
-        val repsTextView = TextView(context).apply {
-            text = "REPS: 0"
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
-        }
+        tvReps = createTextView(context, "REPS: 0")
+        tvMistake = createTextView(context, "MISTAKE: --", android.R.color.holo_red_dark)
 
-        val mistakeTextView = TextView(context).apply {
-            text = "MISTAKE: --"
-            setTextColor(context.resources.getColor(android.R.color.holo_red_dark, null))
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
+        container.apply {
+            addView(tvReps)
+            addView(tvMistake)
         }
-
-        container.addView(repsTextView)
-        container.addView(mistakeTextView)
 
         webView = KinesteXSDK.createCameraComponent(
             context = context,
@@ -446,54 +308,56 @@ class MainActivity : AppCompatActivity() {
             exercises = listOf("Squats"),
             user = null,
             isLoading = viewModel.isLoading,
-            onMessageReceived = { message ->
-                when (message) {
-                    is WebViewMessage.ExitKinestex -> {
-                        lifecycleScope.launch {
-                            viewModel.showWebView.emit(WebViewState.ERROR)
-                        }
-                    }
-
-                    is WebViewMessage.Reps -> {
-                        val reps = message.data["value"] as? Int ?: 0
-                        lifecycleScope.launch {
-                            viewModel.reps.emit(reps)
-                        }
-
-                    }
-
-                    is WebViewMessage.Mistake -> {
-                        val mistake = message.data["value"] as? String ?: "--"
-                        lifecycleScope.launch {
-                            viewModel.mistake.emit(mistake)
-                        }
-
-                    }
-
-                    else -> {
-                        // Handle other messages
-                    }
-                }
-            }
+            onMessageReceived = ::handleWebViewMessage
         )
 
-        webView?.let {
-            container.addView(setLayoutParamsFullScreen(it))
-        }
+        webView?.let { container.addView(setLayoutParamsFullScreen(it)) }
 
         return container
     }
 
-    private fun setLayoutParamsFullScreen(view: View): View {
-        view.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ).apply {
-            gravity = Gravity.CENTER_VERTICAL
+    private fun handleWebViewMessage(message: WebViewMessage) {
+        when (message) {
+            is WebViewMessage.ExitKinestex -> lifecycleScope.launch {
+                viewModel.showWebView.emit(
+                    WebViewState.ERROR
+                )
+            }
+
+            is WebViewMessage.Reps -> (message.data["value"] as? Int)?.let { viewModel.setReps(it) }
+            is WebViewMessage.Mistake -> (message.data["value"] as? String)?.let {
+                viewModel.setMistake(
+                    it
+                )
+            }
+
+            else -> {
+
+            }
         }
+    }
+
+    private fun setLayoutParamsFullScreen(view: View): View {
+        view.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        )
         return view
     }
 
+    private fun createTextView(
+        context: Context, text: String, textColorResId: Int = android.R.color.white
+    ): TextView {
+        return TextView(context).apply {
+            this.text = text
+            setTextColor(context.resources.getColor(textColorResId, context.theme))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+                topMargin = 8
+            }
+        }
+    }
 
     private fun createOptionView(
         context: Context,
@@ -546,8 +410,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dpToPx(context: Context, dp: Int): Int {
-        val density = context.resources.displayMetrics.density
-        return (dp * density).toInt()
+        return (dp * context.resources.displayMetrics.density).toInt()
+    }
+
+
+    private fun updateTextView(textView: TextView, text: String) {
+        textView.text = text
     }
 
     override fun onBackPressed() {
@@ -578,5 +446,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-

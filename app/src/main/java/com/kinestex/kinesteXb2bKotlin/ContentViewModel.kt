@@ -7,8 +7,11 @@ package com.kinestex.kinesteXb2bKotlin
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.kinestex.kinesteXb2bKotlin.data.IntegrationOption
+import com.kinestex.kinesteXb2bKotlin.data.IntegrationOptionType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -29,53 +32,28 @@ class ContentViewModel : ViewModel() {
     var integrateOptions: List<IntegrationOption> = generateOptions()
 
     private fun generateOptions(): List<IntegrationOption> {
-
-        val completeUX = IntegrationOption(
-            "Conplete UX",
-            "Goal Category",
-            mutableListOf(
-                "Cardio",
-                "Strength",
-                "Rehabilitation",
-                "WeightManagement"
+        return IntegrationOptionType.entries.map { optionType ->
+            IntegrationOption(
+                title = optionType.title,
+                optionType = optionType.category,
+                subOption = optionType.subOptions?.toMutableList()
             )
-        )
-        val workoutPlan = IntegrationOption(
-            "Workout Plan",
-            "Plan",
-            mutableListOf(
-                "Full Cardio",
-                "Elastic Evolution",
-                "Circuit Training",
-                "Fitness Cardio"
-            )
-        )
-        val workout = IntegrationOption(
-            "Workout",
-            "Workout",
-            mutableListOf(
-                "Fitness Lite",
-                "Circuit Training",
-                "Tabata"
-            )
-        )
-
-        val challenge = IntegrationOption(
-            "Challenge",
-            "Challenge",
-            mutableListOf(
-                "Squats",
-                "Jumping Jack"
-            )
-        )
-        val camera = IntegrationOption(
-            title = "Camera"
-        )
-
-        return mutableListOf(completeUX, workoutPlan, workout, challenge, camera)
+        }
     }
 
     fun setOption(i: Int) {
         selectedOptionPosition.value = i
+    }
+
+    fun setMistake(it: String) {
+        viewModelScope.launch {
+            mistake.emit(it)
+        }
+    }
+
+    fun setReps(it: Int) {
+        viewModelScope.launch {
+            reps.emit(it)
+        }
     }
 }
