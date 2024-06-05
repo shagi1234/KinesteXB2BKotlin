@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -56,6 +57,17 @@ class GenericWebView(
         with(webView) {
             webChromeClient = WebChromeClient()
 
+            webChromeClient = object : WebChromeClient() {
+                override fun onPermissionRequest(request: PermissionRequest) {
+                    if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                        request.grant(request.resources)
+                    } else {
+                        request.deny()
+                    }
+                }
+            }
+
+
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
@@ -73,6 +85,7 @@ class GenericWebView(
             }
 
             settings.javaScriptEnabled = true
+            settings.mediaPlaybackRequiresUserGesture = false // Ensure media playback is allowed
             addJavascriptInterface(object {
                 @JavascriptInterface
                 fun postMessage(message: String) {
