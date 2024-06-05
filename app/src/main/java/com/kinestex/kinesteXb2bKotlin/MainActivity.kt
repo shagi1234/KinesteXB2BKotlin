@@ -10,29 +10,32 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.webkit.WebView
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.kinestex.kinesteXSDK.KinesteXSDK
 import com.kinestex.kinesteXSDK.PlanCategory
 import com.kinestex.kinesteXSDK.WebViewMessage
 import com.kinestex.kinesteXb2bKotlin.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: ContentViewModel
-    private var kinesteXSDK: KinesteXSDK? = null
     private lateinit var binding: ActivityMainBinding
     private var iconSubOptions: MutableList<ImageView> = mutableListOf()
     private var webView: WebView? = null
 
+    private var tvMistake: TextView? = null
+    private var tvReps: TextView? = null
 
-    val apiKey = "678c2c690b1b2496c20fd42676794da5a77291f6" // store this key securely
-    val company = "CAREVOICE"
-    val userId = "user1"
+
+    private val apiKey = "678c2c690b1b2496c20fd42676794da5a77291f6" // store this key securely
+    private val company = "CAREVOICE"
+    private val userId = "user1"
 
     @SuppressLint("SetJavaScriptEnabled", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,8 +161,7 @@ class MainActivity : AppCompatActivity() {
     private fun createWebView(): View? {
         var view: View? = null
 
-        val subOption = viewModel.integrateOptions[viewModel.selectedOptionPosition.value
-            ?: 0].subOption?.get(viewModel.selectedSubOption)
+        val subOption = viewModel.integrateOptions[viewModel.selectedOptionPosition.value].subOption?.get(viewModel.selectedSubOption)
 
         when (viewModel.selectedOptionPosition.value) {
             0 -> {
@@ -175,8 +177,8 @@ class MainActivity : AppCompatActivity() {
                         when (message) {
 
                             is WebViewMessage.ExitKinestex -> {
-                                runOnUiThread {
-                                    viewModel.showWebView.value = WebViewState.ERROR
+                                lifecycleScope.launch {
+                                    viewModel.showWebView.emit(WebViewState.ERROR)
                                 }
                             }
 
@@ -204,8 +206,8 @@ class MainActivity : AppCompatActivity() {
                         when (message) {
 
                             is WebViewMessage.ExitKinestex -> {
-                                runOnUiThread {
-                                    viewModel.showWebView.value = WebViewState.ERROR
+                                lifecycleScope.launch {
+                                    viewModel.showWebView.emit(WebViewState.ERROR)
                                 }
                             }
 
@@ -234,8 +236,8 @@ class MainActivity : AppCompatActivity() {
                         when (message) {
 
                             is WebViewMessage.ExitKinestex -> {
-                                runOnUiThread {
-                                    viewModel.showWebView.value = WebViewState.ERROR
+                                lifecycleScope.launch {
+                                    viewModel.showWebView.emit(WebViewState.ERROR)
                                 }
                             }
 
@@ -265,8 +267,8 @@ class MainActivity : AppCompatActivity() {
                         when (message) {
 
                             is WebViewMessage.ExitKinestex -> {
-                                runOnUiThread {
-                                    viewModel.showWebView.value = WebViewState.ERROR
+                                lifecycleScope.launch {
+                                    viewModel.showWebView.emit(WebViewState.ERROR)
                                 }
                             }
 
@@ -301,36 +303,59 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observe() {
-        viewModel.showWebView.observe(this) { state ->
-            when (state) {
-                WebViewState.LOADING -> {
-                    //
-                }
-
-                WebViewState.ERROR -> {
-                    binding.layoutWebView.removeAllViews()
-                    binding.layoutWebView.visibility = View.GONE
-                }
-
-                WebViewState.SUCCESS -> {
-                    binding.layoutWebView.visibility = View.VISIBLE
-
-                    webView?.let {
-                        if (viewModel.selectedOptionPosition.value == 4) return@observe
-
-                        val view = setLayoutParamsFullScreen(it)
-                        binding.layoutWebView.removeAllViews()
-                        binding.layoutWebView.addView(view)
+        lifecycleScope.launch {
+            viewModel.showWebView.collect { state ->
+                when (state) {
+                    WebViewState.LOADING -> {
+                        //
                     }
 
+                    WebViewState.ERROR -> {
+                        binding.layoutWebView.removeAllViews()
+                        binding.layoutWebView.visibility = View.GONE
+                    }
+
+                    WebViewState.SUCCESS -> {
+                        binding.layoutWebView.visibility = View.VISIBLE
+
+                        webView?.let {
+                            if (viewModel.selectedOptionPosition.value == 4) return@collect
+
+                            val view = setLayoutParamsFullScreen(it)
+                            binding.layoutWebView.removeAllViews()
+                            binding.layoutWebView.addView(view)
+                        }
+
+                    }
                 }
             }
         }
 
-        viewModel.selectedOptionPosition.observe(this) {
-            binding.next.text = "View ${viewModel.integrateOptions[it].title}"
-            createSubOption(it)
+
+        lifecycleScope.launch {
+            viewModel.selectedOptionPosition.collect {
+                binding.next.text = "View ${viewModel.integrateOptions[it].title}"
+                createSubOption(it)
+            }
         }
+
+        lifecycleScope.launch {
+            viewModel.mistake.collect { mistake ->
+                tvMistake?.let {
+                    it.text = "MISTAKE: $mistake"
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.reps.collect { reps ->
+                tvReps?.let {
+                    it.text = "REPS: $reps"
+                }
+            }
+        }
+
+
     }
 
     private fun createSubOption(optionPosition: Int) {
@@ -424,19 +449,25 @@ class MainActivity : AppCompatActivity() {
             onMessageReceived = { message ->
                 when (message) {
                     is WebViewMessage.ExitKinestex -> {
-                        runOnUiThread {
-                            viewModel.showWebView.value = WebViewState.ERROR
+                        lifecycleScope.launch {
+                            viewModel.showWebView.emit(WebViewState.ERROR)
                         }
                     }
 
                     is WebViewMessage.Reps -> {
                         val reps = message.data["value"] as? Int ?: 0
-                        repsTextView.text = "REPS: $reps"
+                        lifecycleScope.launch {
+                            viewModel.reps.emit(reps)
+                        }
+
                     }
 
                     is WebViewMessage.Mistake -> {
                         val mistake = message.data["value"] as? String ?: "--"
-                        mistakeTextView.text = "MISTAKE: $mistake"
+                        lifecycleScope.launch {
+                            viewModel.mistake.emit(mistake)
+                        }
+
                     }
 
                     else -> {
@@ -527,7 +558,10 @@ class MainActivity : AppCompatActivity() {
                 if (viewModel.showWebView.value == WebViewState.ERROR) {
                     super.onBackPressed()
                 } else {
-                    viewModel.showWebView.value = WebViewState.ERROR
+                    lifecycleScope.launch {
+                        viewModel.showWebView.emit(WebViewState.ERROR)
+                    }
+
                 }
             }
             return
@@ -535,7 +569,9 @@ class MainActivity : AppCompatActivity() {
         if (viewModel.showWebView.value == WebViewState.ERROR) {
             super.onBackPressed()
         } else {
-            viewModel.showWebView.value = WebViewState.ERROR
+            lifecycleScope.launch {
+                viewModel.showWebView.emit(WebViewState.ERROR)
+            }
         }
 
 
