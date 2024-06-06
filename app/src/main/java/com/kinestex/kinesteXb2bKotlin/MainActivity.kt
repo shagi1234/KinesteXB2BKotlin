@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -66,35 +67,26 @@ class MainActivity : AppCompatActivity() {
         val permission = CAMERA
 
         if (ContextCompat.checkSelfPermission(
-                this,
-                permission
+                this, permission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // Permission is not granted, show rationale if necessary
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
                 // You can show a custom rationale dialog here
-                AlertDialog.Builder(this)
-                    .setTitle("Camera Permission Needed")
+                AlertDialog.Builder(this).setTitle("Camera Permission Needed")
                     .setMessage("This app requires access to the camera to take photos.")
                     .setPositiveButton("OK") { _, _ ->
                         // Request permission again
                         ActivityCompat.requestPermissions(
-                            this,
-                            arrayOf(permission),
-                            CAMERA_PERMISSION_REQUEST_CODE
+                            this, arrayOf(permission), CAMERA_PERMISSION_REQUEST_CODE
                         )
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
+                    }.setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()
-                    }
-                    .create()
-                    .show()
+                    }.create().show()
             } else {
                 // No rationale needed, request the permission
                 ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    CAMERA_PERMISSION_REQUEST_CODE
+                    this, arrayOf(permission), CAMERA_PERMISSION_REQUEST_CODE
                 )
             }
         } else {
@@ -104,9 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -124,7 +114,6 @@ class MainActivity : AppCompatActivity() {
     private fun onCameraPermissionGranted() {
 //        Toast.makeText(this, "Camera permission granted", Toast.LENGTH_SHORT).show()
     }
-
 
     private fun initUiListeners() {
         binding.apply {
@@ -404,11 +393,16 @@ class MainActivity : AppCompatActivity() {
                 )
             }
 
-            is WebViewMessage.Reps -> (message.data["value"] as? Int)?.let { viewModel.setReps(it) }
-            is WebViewMessage.Mistake -> (message.data["value"] as? String)?.let {
-                viewModel.setMistake(
-                    it
-                )
+            is WebViewMessage.Reps -> {
+                (message.data["value"] as? Int)?.let { viewModel.setReps(it) }
+            }
+
+            is WebViewMessage.Mistake -> {
+                (message.data["value"] as? String)?.let {
+                    viewModel.setMistake(
+                        it
+                    )
+                }
             }
 
             else -> {
@@ -446,24 +440,18 @@ class MainActivity : AppCompatActivity() {
     ): LinearLayout {
         val linearLayout = LinearLayout(context)
         val params = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
         linearLayout.layoutParams = params
         linearLayout.orientation = LinearLayout.HORIZONTAL
         linearLayout.setPadding(
-            dpToPx(context, 10),
-            dpToPx(context, 7),
-            dpToPx(context, 10),
-            dpToPx(context, 7)
+            dpToPx(context, 10), dpToPx(context, 7), dpToPx(context, 10), dpToPx(context, 7)
         )
 
         // Create TextView
         val textView = TextView(context)
         val textParams = LinearLayout.LayoutParams(
-            0,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            1.0f
+            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f
         )
         textView.layoutParams = textParams
         textView.text = title
@@ -473,8 +461,7 @@ class MainActivity : AppCompatActivity() {
         val imageView = ImageView(context)
 
         val imageParams = LinearLayout.LayoutParams(
-            dpToPx(context, 20),
-            dpToPx(context, 20)
+            dpToPx(context, 20), dpToPx(context, 20)
         )
 
         imageView.layoutParams = imageParams

@@ -24,8 +24,7 @@ class GenericWebView(
     onMessageReceived: (WebViewMessage) -> Unit,
     isLoading: MutableStateFlow<Boolean>,
     data: Map<String, Any>
-) : WebView(context)
-{
+) : WebView(context) {
     private var viewModel: WebViewState = WebViewState()
 
     init {
@@ -101,11 +100,10 @@ class GenericWebView(
         try {
             val json = JSONObject(message)
             val type = json.optString("type")
-            val data = json.optJSONObject("data") ?: JSONObject()
 
             val dataMap = mutableMapOf<String, Any>()
-            data.keys().forEach { key ->
-                dataMap[key] = data[key]
+            json.keys().forEach { key ->
+                dataMap[key] = json[key]
             }
 
             val webViewMessage = when (type) {

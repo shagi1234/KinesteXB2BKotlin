@@ -5,6 +5,7 @@ package com.kinestex.kinesteXb2bKotlin
  * Created by shagi on 22.02.2024 22:27
  */
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
