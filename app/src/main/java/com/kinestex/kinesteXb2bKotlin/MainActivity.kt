@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[ContentViewModel::class.java]
 
         initUiListeners()
+
         observe()
     }
 
@@ -131,6 +132,9 @@ class MainActivity : AppCompatActivity() {
             workout.setOnClickListener { handleOptionSelection(2, iconRadioWorkout) }
             challenge.setOnClickListener { handleOptionSelection(3, iconRadioChallenge) }
             camera.setOnClickListener { handleOptionSelection(4, iconRadioCamera) }
+            btnJumpingJack.setOnClickListener {
+                KinesteXSDK.updateCurrentExercise("Jumping Jack")
+            }
         }
     }
 
@@ -374,7 +378,7 @@ class MainActivity : AppCompatActivity() {
             companyName = company,
             userId = userId,
             currentExercise = "Squats",
-            exercises = listOf("Squats"),
+            exercises = listOf("Squats","Jumping Jack"),
             user = null,
             isLoading = viewModel.isLoading,
             onMessageReceived = ::handleWebViewMessage

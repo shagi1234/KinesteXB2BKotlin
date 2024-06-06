@@ -173,16 +173,13 @@ class GenericWebView(
     }
 
     fun updateCurrentExercise(exercise: String) {
-        val webView = viewModel.webView ?: run {
-            Log.e("WebViewManager", "⚠️ WebView is not available")
-            return
-        }
+        val webView = viewModel.webView.value
 
         val script = """
         window.postMessage({ 'currentExercise': '$exercise' }, '*');
     """.trimIndent()
 
-        webView.value?.evaluateJavascript(script) { result ->
+        webView?.evaluateJavascript(script) { result ->
             Log.d("WebViewManager", "✅ Successfully sent an update: $result")
         }
     }
